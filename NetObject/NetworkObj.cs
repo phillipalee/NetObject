@@ -19,17 +19,22 @@ namespace PLCorp.WebUtils
         public Socket ClientListener { get { return clientListener; } }
         public string SocketTxt = "Socket " + i.ToString() + ": Running on thread: " + MyThreadName;
        
-        public string MyAddress = "";
+        public string MyAddress { get; set; }
         public string myIPAddress { get; set; }
 
-        public NetworkObject() { }
-
+        /// <summary>
+        /// Constructor must provide host name or address
+        /// </summary>
+        /// <param name="host"></param>
         public NetworkObject(string host)
         {
             MyAddress = host;
         }
 
-        
+        /// <summary>
+        /// Async 
+        /// </summary>
+        /// <returns></returns>
         public async Task<string> GetHttpPage() //Function to read from given url
         {
             HttpClient client = new HttpClient();
@@ -40,7 +45,7 @@ namespace PLCorp.WebUtils
         }
 
 
-        public Socket GetSocketOnHomePage()
+        public Socket GetSocketOnAddress(int port = 80)
         {
             // create socket
             clientListener = new Socket(SocketType.Stream, ProtocolType.IP);
@@ -49,7 +54,7 @@ namespace PLCorp.WebUtils
 
             try
             {
-                ClientListener.Connect(MyAddress, 80);
+                ClientListener.Connect(MyAddress, port);
                 myIPAddress = "IP Address = " + ClientListener.RemoteEndPoint.ToString();
                 i++;
                 
@@ -122,12 +127,10 @@ namespace PLCorp.WebUtils
             s.Write(LineTerminator, 0, 2);
 
 
-            var response = ReadLine(s);
-
 
         }
 
-        public static string ReadLine(Stream s)
+        public static string ReadLine(Stream s, int sleep = 0)
         {
             var LineBuffer = new List<byte>();
             try
@@ -135,8 +138,8 @@ namespace PLCorp.WebUtils
                 while (true)
                 {
                     int b = s.ReadByte();
-                    // slow read dos
-             //       Thread.Sleep(200);
+                    
+                    Thread.Sleep(sleep);
 
                     if (b == -1)
                         return null;
